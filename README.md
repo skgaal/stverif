@@ -1,3 +1,3 @@
-# sw8-plc
+# stverif
 
 PLC Compiler written in Haskell
