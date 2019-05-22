@@ -1,0 +1,695 @@
+{-
+ -
+ - Grammar for the PLC programming language Structured Text (ST).
+ - Follows roughly the IEC-61131-3 standard, but deviates beause:
+ -    1. The standard has a few mistakes and inconsistencies.
+ -    2. We want to support the version of the ST language used by B&R Automation Studio 4.3.
+ -
+ -}
+
+entrypoints Entrypoint; -- happy GLR only supports one entrypoint, sp we define an Entrypoint non-terminal.
+
+Entry_Empty. Entrypoint ::= {- empty -};
+Entry_Prog_Decls. Entrypoint ::= [Prog_Decl];
+Entry_Config_Decl. Entrypoint ::= Config_Decl;
+Entry_POU_Decl. Entrypoint ::= POU_Decl;
+Entry_Prog_Decl_Inners. Entrypoint ::= [Prog_Decl_Inner1];
+Entry_Actions. Entrypoint ::= [Action];
+
+
+-- Table 3 - Comments
+comment "//";
+comment "(*" "*)";
+comment "/*" "*/";
+-- Nested comments are part of the standard, but are not supported in this compiler!
+
+-- Table 4 - Pragma
+comment "{" "}";    -- BNFC does not convert this correctly into the .x file, so we edit it with: "sed -i '29 a "{" [$u # \\}]* "}" ;' output/PLCparser/LexPlc.x"
+
+-- Table 5 - Numeric literal
+Numeric_Literal. Constant ::= Numeric_Literal;
+_. Constant ::= Constant2;
+Char_Literal. Constant2 ::= Char_Literal;
+Time_Literal. Constant2 ::= Time_Literal;
+Bit_Str_Literal. Constant2 ::= Bit_Str_Literal;
+Bool_Literal. Constant2 ::= Bool_Literal;
+
+_. Numeric_Literal ::= Numeric_Literal2; -- Int_Literal
+_. Numeric_Literal ::= Numeric_Literal3; -- Real_Literal
+Int_Literal. Numeric_Literal2 ::= Int_Literal;
+_. Numeric_Literal2 ::= Numeric_Literal21; -- Typed_Int_Literal
+Typed_Int_Literal. Numeric_Literal21 ::= Int_Type_Name "#" Int_Literal;
+Signed_Int. Int_Literal ::= Signed_Int;
+_. Int_Literal ::= Int_Literal2;
+Binary_Int. Int_Literal2 ::= BinaryInt;
+Octal_Int. Int_Literal2 ::= OctalInt;
+Hex_Int. Int_Literal2 ::= HexInt;
+Real_Literal. Numeric_Literal3 ::= Real_Literal;
+_. Numeric_Literal3 ::= Numeric_Literal31; -- Typed_Int_Literal
+Typed_Real_Literal. Numeric_Literal31 ::= Real_Type_Name "#" Real_Literal;
+Signed_Real. Real_Literal ::= Signed_Int "." UnsignedInt;
+Signed_Real_Exp. Real_Literal ::= Signed_Real_Exp;
+
+-- The following 'Constant1' only cowers constants that does not start with '+' or '-'. This is used in expressions, where '+' and '-' could be ambigious if signed constants were used.
+Numeric_Literal. Constant1 ::= Numeric_Literal1;
+_. Constant1 ::= Constant2;
+Unsigned_Int_Literal. Numeric_Literal1 ::= Int_Literal1;
+_. Numeric_Literal1 ::= Numeric_Literal21;
+Unsigned_Real_Literal. Numeric_Literal1 ::= Real_Literal1;
+_. Numeric_Literal1 ::= Numeric_Literal31;
+Unsigned_Int. Int_Literal1 ::= UnsignedInt;
+_. Int_Literal1 ::= Int_Literal2;
+Unsigned_Real. Real_Literal1 ::= UnsignedInt "." UnsignedInt;
+Unsigned_Real_Exp. Real_Literal1 ::= UnsignedRealExp;
+
+Typed_Bit_Str_Literal. Bit_Str_Literal ::= Bit_Str_Type_Name "#" Int_Literal1;
+Typed_False_Literal. Bool_Literal ::= Bool_Type_Name "#" "FALSE";
+Typed_True_Literal. Bool_Literal ::= Bool_Type_Name "#" "TRUE";
+False_Literal. Bool_Literal ::= "FALSE";
+True_Literal. Bool_Literal ::= "TRUE";
+
+_. Signed_Int ::= "+" Signed_Int1;
+_. Signed_Int ::= Signed_Int1;
+Negative_Int. Signed_Int ::= "-" UnsignedInt;
+Positive_Int. Signed_Int1 ::= UnsignedInt;
+
+_. Signed_Real_Exp ::= "+" Signed_Real_Exp1;
+_. Signed_Real_Exp ::= Signed_Real_Exp1;
+Negative_Real_Exp. Signed_Real_Exp ::= "-" UnsignedRealExp;
+Positive_Real_Exp. Signed_Real_Exp1 ::= UnsignedRealExp;
+
+token UnsignedInt digit ( '_' ? digit)* ;
+token UnsignedRealExp digit ( '_' ? digit)* '.' digit ( '_' ? digit)* ( 'E' | 'e' ) ( '+' | '-' )? digit ( '_' ? digit)*;
+token BinaryInt {"2#"} ( '_'? ["01"])+ ;
+token OctalInt {"8#"} ( '_' ? ["01234567"] )+; -- deprecated.
+token HexInt {"16#"} ( '_' ? ["0123456789ABCDEFabcdef"] )+;
+
+
+-- Table 6 - Character String literals
+-- Table 7 - Two-character combinations in character strings
+_. Char_Literal ::= "STRING#" Char_Literal1;
+_. Char_Literal ::= Char_Literal1;
+Char_Str. Char_Literal1 ::= Char_Str;
+S_Byte_Char_Str. Char_Str ::= SByteCharStr;
+D_Byte_Char_Str. Char_Str ::= DByteCharStr;
+token SByteCharStr {"'"} ((char - ["$'"]) | {"$$"} | {"$L"} | {"$N"} | {"$P"} | {"$R"} | {"$T"}
+                                              | {"$l"} | {"$n"} | {"$p"} | {"$r"} | {"$t"} | {"$'"}
+                                              | '$' ["0123456789ABCDEFabcdef"] ["0123456789ABCDEFabcdef"])* {"'"};
+token DByteCharStr '"' ((char - ["$\""]) | {"$$"} | {"$L"} | {"$N"} | {"$P"} | {"$R"} | {"$T"}
+                                            | {"$l"} | {"$n"} | {"$p"} | {"$r"} | {"$t"} | {"$\""}
+                                            | '$' ["0123456789ABCDEFabcdef"] ["0123456789ABCDEFabcdef"] ["0123456789ABCDEFabcdef"] ["0123456789ABCDEFabcdef"])* '"';
+
+-- Table 8 - Duration literals
+-- Table 9 – Date and time of day literals
+Duration_Literal.      Time_Literal ::= Duration;
+Time_Of_Day_Literal.   Time_Literal ::= Tod_Type "#" Daytime;
+Date_Literal.          Time_Literal ::= Date_Type Date_Literal;
+Date_And_Time_Literal. Time_Literal ::=  DT_Type "#" Date_Literal "-" Daytime;
+Duration. Duration ::= Duration_Type Sign_Interval;
+Duration_Type_Name. Duration_Type ::= Time_Type_Name "#";
+Duration_Type_T.    Duration_Type ::= "T#";
+Duration_Type_LT.   Duration_Type ::= "LT#";
+_. Sign_Interval ::= "+" Sign_Interval1;
+_. Sign_Interval ::= Sign_Interval1;
+Negative_Interval. Sign_Interval  ::= "-" Interval;
+Positive_Interval. Sign_Interval1 ::= Interval;
+_. Interval  ::= Interval1;
+_. Interval1 ::= Interval2;
+_. Interval2 ::= Interval3;
+_. Interval3 ::= Interval4;
+_. Interval4 ::= Interval5;
+_. Interval5 ::= Interval6;
+_. Interval6 ::= Interval7;
+Days_Real.          Interval1 ::= UnsignedInt "." D_Token;
+Days.               Interval1 ::= D_Token Interval2;
+Hours_Real.         Interval2 ::= UnsignedInt "." H_Token;
+Hours.              Interval2 ::= H_Token Interval3;
+Minutes_Real.       Interval3 ::= UnsignedInt "." M_Token;
+Minutes.            Interval3 ::= M_Token Interval4;
+Seconds_Real.       Interval4 ::= UnsignedInt "." S_Token;
+Seconds.            Interval4 ::= S_Token Interval5;
+Milliseconds_Real.  Interval5 ::= UnsignedInt "." MS_Token;
+Milliseconds.       Interval5 ::= MS_Token Interval6;
+Microseconds_Real.  Interval6 ::= UnsignedInt "." US_Token;
+Microseconds.       Interval6 ::= US_Token Interval7;
+Nanoseconds_Real.   Interval7 ::= UnsignedInt "." NS_Token;
+Nanoseconds.        Interval7 ::= NS_Token;
+Empty.              Interval7 ::= {- empty -}; -- This is more permissive, since it allows empty Interval, but it greatly simplifies the grammar.
+                                               -- Note: This does add two shift/reduce conflicts.
+token D_Token  digit ( '_' ? digit)* 'd' '_'?; -- The last '_'? is slightly more permissive than the standard, but whatever.
+token H_Token  digit ( '_' ? digit)* 'h' '_'?;
+token M_Token  digit ( '_' ? digit)* 'm' '_'?;
+token S_Token  digit ( '_' ? digit)* 's' '_'?;
+token MS_Token digit ( '_' ? digit)* {"ms"} '_'?;
+token US_Token digit ( '_' ? digit)* {"us"} '_'?;
+token NS_Token digit ( '_' ? digit)* {"ns"} '_'?;
+
+Tod_Type.     Tod_Type ::= Tod_Type_Name;
+LTime_Of_Day. Tod_Type ::= "LTIME_OF_DAY";
+Hour_Minute_Second. Daytime ::= UnsignedInt ":" UnsignedInt ":" Day_Second;
+Day_Second.      Day_Second ::= UnsignedInt;
+Day_Second_Real. Day_Second ::= UnsignedInt "." UnsignedInt;
+Date_Type.    Date_Type ::= Date_Type_Name "#";
+Date_Type_D.  Date_Type ::= "D#";
+Date_Type_LD. Date_Type ::= "LD#";
+Year_Month_Day. Date_Literal ::= UnsignedInt "-" UnsignedInt "-" UnsignedInt; -- Year - Month - Day
+DT_Type. DT_Type ::= DT_Type_Name;
+LDate_And_Time. DT_Type ::= "LDATE_AND_TIME";
+
+
+-- Table 10 - Elementary data types
+Elem_Type_Name.               Data_Type_Access ::= Elem_Type_Name;
+Access_List.                  Data_Type_Access ::= [Accessor];
+Access_List_String_Type_Name. Data_Type_Access ::= [Accessor] "." String_Type_Name;
+Numeric_Type_Name. Elem_Type_Name ::= Numeric_Type_Name;
+Bit_Str_Type_Name. Elem_Type_Name ::= Bit_Str_Type_Name;
+Bool_Type_Name.    Elem_Type_Name ::= Bool_Type_Name;
+String_Type_Name.  Elem_Type_Name ::= String_Type_Name;
+Date_Type_Name.    Elem_Type_Name ::= Date_Type_Name;
+Time_Type_Name.    Elem_Type_Name ::= Time_Type_Name;
+Tod_Type_Name.     Elem_Type_Name ::= Tod_Type_Name;
+DT_Type_Name.      Elem_Type_Name ::= DT_Type_Name;
+Any_Type.          Elem_Type_Name ::= "ANY";
+Int_Type_Name.  Numeric_Type_Name ::= Int_Type_Name;
+Real_Type_Name. Numeric_Type_Name ::= Real_Type_Name;
+Any_Num.        Numeric_Type_Name ::= "ANY_NUM";
+Sign_Int_Type_Name.   Int_Type_Name ::= Sign_Int_Type_Name;
+Unsign_Int_Type_Name. Int_Type_Name ::= Unsign_Int_Type_Name;
+Any_Int.              Int_Type_Name ::= "ANY_INT";
+SInt. Sign_Int_Type_Name ::= "SINT";
+Int.  Sign_Int_Type_Name ::= "INT";
+DInt. Sign_Int_Type_Name ::= "DINT";
+LInt. Sign_Int_Type_Name ::= "LINT";
+USInt. Unsign_Int_Type_Name ::= "USINT";
+UInt.  Unsign_Int_Type_Name ::= "UINT";
+UDInt. Unsign_Int_Type_Name ::= "UDINT";
+ULInt. Unsign_Int_Type_Name ::= "ULINT";
+Real.     Real_Type_Name ::= "REAL";
+LReal.    Real_Type_Name ::= "LREAL";
+Any_Real. Real_Type_Name ::= "ANY_REAL";
+S_Byte_Str_Spec. String_Type_Name ::= S_Byte_Str_Spec;
+D_Byte_Str_Spec. String_Type_Name ::= D_Byte_Str_Spec;
+Char.  String_Type_Name ::= "CHAR";
+WChar. String_Type_Name ::= "WCHAR" ;
+Time.  Time_Type_Name ::= "TIME";
+LTime. Time_Type_Name ::= "LTIME";
+Date.  Date_Type_Name ::= "DATE";
+LDate. Date_Type_Name ::= "LDATE";
+Time_Of_Day. Tod_Type_Name ::= "TIME_OF_DAY";
+TOD.         Tod_Type_Name ::= "TOD";
+LTOD.        Tod_Type_Name ::= "LTOD";
+Date_And_Time. DT_Type_Name ::= "DATE_AND_TIME";
+DT.            DT_Type_Name ::= "DT";
+LDT.           DT_Type_Name ::= "LDT";
+Byte.  Bit_Str_Type_Name ::= "BYTE";
+Word.  Bit_Str_Type_Name ::= "WORD";
+DWord. Bit_Str_Type_Name ::= "DWORD";
+LWord. Bit_Str_Type_Name ::= "LWORD";
+Bool. Bool_Type_Name ::= "BOOL";
+
+
+-- Table 11 - Declaration of user-defined data types and initialization
+Accessor. Accessor ::= Identifier;
+separator nonempty Accessor ".";
+Accessor_List. Accessor_List ::= [Accessor];
+separator nonempty Accessor_List ",";
+
+Data_Type_Decl. Data_Type_Decl ::= "TYPE" [Type_Decl] "END_TYPE";
+terminator Type_Decl ";";
+Type_Decl. Type_Decl ::= Identifier ":" Type_Decl_RHS;
+Simple_Type_Decl.   Type_Decl_RHS ::= Simple_Spec_Init;
+Subrange_Type_Decl. Type_Decl_RHS ::= Subrange_Spec_Init;
+Enum_Type_Decl.     Type_Decl_RHS ::= Enum_Type_Decl_RHS;
+Array_Type_Decl.    Type_Decl_RHS ::= Array_Spec1;
+Struct_Type_Decl.   Type_Decl_RHS ::= Struct_Spec;
+Unknown_Type_Decl.  Type_Decl_RHS ::= Unknown_Spec_Init;
+--Str_Type_Decl.      Type_Decl_RHS ::= Str_Spec;
+Ref_Type_Decl.      Type_Decl_RHS ::= Ref_Spec1;
+
+Unknown_Spec.      Unknown_Spec_Init ::= [Accessor];                      -- May be: Simple_Spec_Init, Subrange_Spec_Init, Enum_Type_Decl_RHS, Array_Spec1, Struct_Spec.
+Unknown_Spec_Init. Unknown_Spec_Init ::= [Accessor] ":=" Constant_Expr;   -- May be: Simple_Spec_Init, Subrange_Spec_Init, Enum_Type_Decl_RHS.
+
+Simple_Spec.      Simple_Spec_Init ::= Elem_Type_Name;
+Simple_Spec_Init. Simple_Spec_Init ::= Elem_Type_Name ":=" Constant_Expr;
+
+Subrange_Spec.      Subrange_Spec_Init ::= Int_Type_Name "(" Subrange ")";
+Subrange_Spec_Init. Subrange_Spec_Init ::= Int_Type_Name "(" Subrange ")" ":=" Signed_Int;
+  separator nonempty Subrange ",";
+  From_To. Subrange ::= Constant_Expr ".." Constant_Expr;
+
+Typed_Enum_Decl. Enum_Type_Decl_RHS ::= Elem_Type_Name Named_Spec_Init;
+Enum_Decl.       Enum_Type_Decl_RHS ::= Named_Spec_Init;
+  Named_Spec.      Named_Spec_Init ::= "(" [Enum_Value_Spec] ")";
+  Named_Spec_Init. Named_Spec_Init ::= "(" [Enum_Value_Spec] ")" ":=" Enum_Value;
+    separator nonempty Enum_Value_Spec "," ;
+    Enum_Value_Spec.      Enum_Value_Spec ::= Identifier;
+    Enum_Value_Spec_Init. Enum_Value_Spec ::= Identifier ":=" Constant_Expr;
+      Full_Enum_Value. Enum_Value ::= Identifier "#" Identifier;
+      Enum_Value. Enum_Value ::= Identifier;
+  Enum_Spec.      Enum_Spec_Init ::= "(" [Identifier] ")";
+  Enum_Spec_Init. Enum_Spec_Init ::= "(" [Identifier] ")" ":=" Enum_Value;
+
+_.                        Array_Spec1 ::= Array_Spec; -- Array_Spec_Init
+Array_Spec_Init.          Array_Spec1 ::= Array_Spec ":=" Array_Init;
+Accessor_Array_Spec_Init. Array_Spec1 ::= [Accessor] ":=" Array_Init;
+  Array_Spec. Array_Spec ::= "ARRAY" "[" [Subrange] "]" "OF" Data_Type_Access;
+  Array_Init. Array_Init ::= "[" [Array_Elem_Init] "]";
+    separator nonempty Array_Elem_Init ",";
+    rules Array_Elem_Init ::= Elem_Init_Value | UnsignedInt "(" ")" | UnsignedInt "(" Elem_Init_Value ")";
+      rules Elem_Init_Value ::= Constant_Expr | Struct_Init | Array_Init;
+
+rules Struct_Spec ::= Struct_Spec_Init | Struct_Decl;
+  Struct_Spec_Init. Struct_Spec_Init ::= [Accessor] ":=" Struct_Init;
+    Struct_Init. Struct_Init ::= "(" [Struct_Elem_Init] ")";
+      separator nonempty Struct_Elem_Init ",";
+      Struct_Elem_Init. Struct_Elem_Init ::= Identifier ":=" Elem_Init_Value;
+        --rules Struct_Elem_Init_RHS ::= Constant_Expr | Array_Init | Struct_Init ; -- | Enum_Value, Ref_Value | - (is part of Constant_Expr, though may not be constant...).
+  Struct_Decl. Struct_Decl ::= "STRUCT" Overlap_Opt [Struct_Elem_Decl] "END_STRUCT";
+    terminator nonempty Struct_Elem_Decl ";";
+    Struct_Elem_Decl.                Struct_Elem_Decl ::= Identifier ":" Struct_Elem_Decl_RHS;
+    Struct_Elem_Decl_Located_At.     Struct_Elem_Decl ::= Identifier Located_At ":" Struct_Elem_Decl_RHS;
+    Struct_Elem_Decl_Located_At_MPA. Struct_Elem_Decl ::= Identifier Located_At Multibit_Part_Access ":" Struct_Elem_Decl_RHS;
+      rules Struct_Elem_Decl_RHS ::= Simple_Spec_Init | Subrange_Spec_Init | Enum_Spec_Init | Array_Spec1 | Struct_Spec_Init | Unknown_Spec_Init | Ref_Spec1 {- not standard -};
+
+--Str_Spec. Str_Spec ::= String_Type_Name;
+--Str_Spec_Init. Str_Spec ::= String_Type_Name ":=" Char_Str;
+
+
+-- Table 12 - Reference operations
+_.             Ref_Spec1 ::= Ref_Spec;
+Ref_Spec_Init. Ref_Spec1 ::= Ref_Spec ":=" Ref_Value;
+  Ref_Spec. Ref_Spec ::= [Ref_To] Data_Type_Access;
+    separator nonempty Ref_To "";
+    token Ref_To {"REF_TO"} | {"REFERENCE TO"};
+--Ref_Adr. Ref_Value ::= ADR_Access;
+  Null.    Ref_Value ::= "NULL";
+  --... Ref_Value ::= Ref_Addr;
+    --Ref_Addr. Ref_Addr ::= "REF" "(" Symbolic_Variable ")"; -- | "REF" "(" FB_Or_Class_Instance_Name ")";  covered by Symbolic_Variable.
+
+--  ADR_Access.     ADR_Access ::= "ADR" "(" Symbolic_Variable ")";
+--  ADR_Access_Str. ADR_Access ::= "ADR" "(" Char_Str ")";
+
+--Ref_Assign. Ref_Assign ::= Identifier ":=" Ref_Assign_RHS;
+--  rules Ref_Assign_RHS ::= Identifier [Deref] | Ref_Value;
+    --Ref_Deref. Ref_Deref ::= Identifier [Deref1];
+    token Deref '^';
+    terminator Deref "";
+    terminator nonempty Deref1 "";
+    _. Deref1 ::= Deref;
+
+
+-- Table 13 - Declaration of variables / Table 14 – Initialization of variables
+
+rules Variable ::= Direct_Variable | Symbolic_Variable;
+  rules Symbolic_Variable ::= [Accessor] [Multi_Elem_Var_Access]
+                            | [Accessor] [Multi_Elem_Var_Access] [Subscript_Access]
+                            | "THIS" "." [Accessor] [Multi_Elem_Var_Access]
+                            | "THIS" "." [Accessor] [Multi_Elem_Var_Access] [Subscript_Access];
+    terminator Multi_Elem_Var_Access "";
+    Subscript_Var_Access. Multi_Elem_Var_Access ::= [Subscript_Access] "." [Accessor];
+    Deref_Var_Access. Multi_Elem_Var_Access ::= Deref_Access;
+    More_Deref. Multi_Elem_Var_Access ::= [Deref1];
+    terminator nonempty Subscript_Access "";
+    Subscript_Access. Subscript_Access ::= "[" [Subscript] "]";
+      separator nonempty Subscript ",";
+      Subscript. Subscript ::= Exp;
+
+R_Edge_Decl. Edge_Decl ::= [Identifier] ":" "BOOL" "R_EDGE";
+F_Edge_Decl. Edge_Decl ::= [Identifier] ":" "BOOL" "F_EDGE";
+Array_Conform_Decl. Array_Conform_Decl ::= [Identifier] ":" Array_Conformand;
+  Array_Conformand. Array_Conformand ::= "ARRAY" "[" [Star_Token] "]" "OF" Data_Type_Access;
+  token Star_Token '*';
+  separator nonempty Star_Token ",";
+Var_Decl_Init. Var_Decl_Init ::= [Identifier] Var_Decl_Init_RHS;
+Simple_Var_Decl_Init.     Var_Decl_Init_RHS ::= ":" Simple_Spec_Init;
+Array_Var_Decl_Init.      Var_Decl_Init_RHS ::= ":" Array_Spec1;
+Struct_Var_Decl_Init.     Var_Decl_Init_RHS ::= ":" Struct_Spec_Init;
+Unknown_Var_Decl_Init.    Var_Decl_Init_RHS ::= ":" Unknown_Spec_Init;
+--Str_Var_Decl_Init.        Var_Decl_Init_RHS ::= [Identifier] ":" Str_Var_Spec_Init;
+Ref_Var_Decl_Init.        Var_Decl_Init_RHS ::= ":" Ref_Spec1;
+Interface_Var_Decl.       Var_Decl_Init_RHS ::= {- empty -};
+Interface_Var_Decl_Init.  Var_Decl_Init_RHS ::= ":=" Interface_Value;
+terminator nonempty Var_Decl_Init ";";
+  --S_Byte_Str_Spec_Init. Str_Var_Spec_Init ::= S_Byte_Str_Spec ":=" SByteCharStr;
+  --D_Byte_Str_Spec_Init. Str_Var_Spec_Init ::= D_Byte_Str_Spec ":=" DByteCharStr;
+    String.  S_Byte_Str_Spec ::= "STRING" String_Bracket_Opt;
+    WString. D_Byte_Str_Spec ::= "WSTRING" String_Bracket_Opt;
+  rules Interface_Value ::= Symbolic_Variable | "NULL";
+
+Input_Decls.            Input_Decls ::= "VAR_INPUT" [Input_Decl] "END_VAR";
+Retain_Input_Decls.     Input_Decls ::= "VAR_INPUT" "RETAIN" [Input_Decl] "END_VAR";
+Non_Retain_Input_Decls. Input_Decls ::= "VAR_INPUT" "NON_RETAIN" [Input_Decl] "END_VAR";
+terminator Input_Decl ";";
+  rules Input_Decl ::= Edge_Decl | Array_Conform_Decl | Var_Decl_Init;
+
+Output_Decls.            Output_Decls ::= "VAR_OUTPUT" [Output_Decl] "END_VAR";
+Retain_Output_Decls.     Output_Decls ::= "VAR_OUTPUT" "RETAIN" [Output_Decl] "END_VAR";
+Non_Retain_Output_Decls. Output_Decls ::= "VAR_OUTPUT" "NON_RETAIN" [Output_Decl] "END_VAR";
+terminator Output_Decl ";";
+  rules Output_Decl ::= Array_Conform_Decl | Var_Decl_Init;
+
+In_Out_Decls. In_Out_Decls ::= "VAR_IN_OUT" [In_Out_Var_Decl] "END_VAR";
+terminator In_Out_Var_Decl ";";
+rules In_Out_Var_Decl ::= Array_Conform_Decl | Var_Decl; -- | FB_Decl_No_Init; -- covered by Var_Decl -> Var_Spec -> [Accessor].
+  Var_Decl. Var_Decl ::= [Identifier] ":" Var_Spec;
+
+{-
+Var_Decls.            Var_Decls ::= "VAR" Access_Spec_Opt [Var_Decl_Init] "END_VAR";
+Constant_Var_Decls.   Var_Decls ::= "VAR" "CONSTANT" Access_Spec_Opt [Var_Decl_Init] "END_VAR";
+Retain_Var_Decls.     Var_Decls ::= "VAR" "RETAIN" Access_Spec_Opt [Var_Decl_Init] "END_VAR";
+Non_Retain_Var_Decls. Var_Decls ::= "VAR" "NON_RETAIN" Access_Spec_Opt [Var_Decl_Init] "END_VAR";
+-}
+
+{-rules Var_Decls_Modifiers ::= Access_Spec | Modifier Access_Spec;
+Constant.   Modifier ::= "CONSTANT";
+Retain.     Modifier1 ::= "RETAIN";
+Non_Retain. Modifier1 ::= "NON_RETAIN";
+_. Modifier ::= Modifier1;
+-}
+{-Var_Decls_Empty.      Var_Decls ::= "VAR" "END_VAR";
+Var_Decls_Mod_Empty.  Var_Decls ::= "VAR" Var_Decls_Modifiers "END_VAR";
+Var_Decls.            Var_Decls ::= "VAR" [Var_Decl_Init] "END_VAR";
+Var_Decls_Mod.        Var_Decls ::= "VAR" Var_Decls_Modifiers [Var_Decl_Init] "END_VAR";
+Var_Decls_Mod_Empty1.  Var_Decls ::= "VAR" Modifier "END_VAR";
+Var_Decls_Mod1.        Var_Decls ::= "VAR" Modifier [Var_Decl_Init] "END_VAR";-}
+
+Var_Decls_Empty.            Var_Decls ::= "VAR" "END_VAR";
+Constant_Var_Decls_Empty.   Var_Decls ::= "VAR" "CONSTANT" "END_VAR";
+Retain_Var_Decls_Empty.     Var_Decls ::= "VAR" "RETAIN" "END_VAR";
+Non_Retain_Var_Decls_Empty. Var_Decls ::= "VAR" "NON_RETAIN" "END_VAR";
+Var_Decls_Spec_Empty.            Var_Decls ::= "VAR" Access_Spec "END_VAR";
+Constant_Var_Decls_Spec_Empty.   Var_Decls ::= "VAR" "CONSTANT" Access_Spec "END_VAR";
+Retain_Var_Decls_Spec_Empty.     Var_Decls ::= "VAR" "RETAIN" Access_Spec "END_VAR";
+Non_Retain_Var_Decls_Spec_Empty. Var_Decls ::= "VAR" "NON_RETAIN" Access_Spec "END_VAR";
+Var_Decls.            Var_Decls ::= "VAR" [Var_Decl_Init] "END_VAR";
+Constant_Var_Decls.   Var_Decls ::= "VAR" "CONSTANT" [Var_Decl_Init] "END_VAR";
+Retain_Var_Decls.     Var_Decls ::= "VAR" "RETAIN" [Var_Decl_Init] "END_VAR";
+Non_Retain_Var_Decls. Var_Decls ::= "VAR" "NON_RETAIN" [Var_Decl_Init] "END_VAR";
+Var_Decls_Spec.            Var_Decls ::= "VAR" Access_Spec [Var_Decl_Init] "END_VAR";
+Constant_Var_Decls_Spec.   Var_Decls ::= "VAR" "CONSTANT" Access_Spec [Var_Decl_Init] "END_VAR";
+Retain_Var_Decls_Spec.     Var_Decls ::= "VAR" "RETAIN" Access_Spec [Var_Decl_Init] "END_VAR";
+Non_Retain_Var_Decls_Spec. Var_Decls ::= "VAR" "NON_RETAIN" Access_Spec [Var_Decl_Init] "END_VAR";
+
+Loc_Var_Decls.            Loc_Var_Decls ::= "VAR" [Loc_Var_Decl] "END_VAR";
+Constant_Loc_Var_Decls.   Loc_Var_Decls ::= "VAR" "CONSTANT" [Loc_Var_Decl] "END_VAR";
+Retain_Loc_Var_Decls.     Loc_Var_Decls ::= "VAR" "RETAIN" [Loc_Var_Decl] "END_VAR";
+Non_Retain_Loc_Var_Decls. Loc_Var_Decls ::= "VAR" "NON_RETAIN" [Loc_Var_Decl] "END_VAR";
+
+terminator nonempty Loc_Var_Decl ";";    -- specify nonempty here, because empty will be covered by Any_Var_Decl.
+  rules Loc_Var_Decl ::= Located_At ":" Loc_Var_Spec_Init
+                       | Identifier Located_At ":" Loc_Var_Spec_Init;
+    Located_At. Located_At ::= "AT" Direct_Variable;
+
+Loc_Partly_Var_Decl.            Loc_Partly_Var_Decl ::= "VAR" [Loc_Partly_Var] "END_VAR";
+Retain_Loc_Partly_Var_Decl.     Loc_Partly_Var_Decl ::= "VAR" "RETAIN" [Loc_Partly_Var] "END_VAR";
+Non_Retain_Loc_Partly_Var_Decl. Loc_Partly_Var_Decl ::= "VAR" "NON_RETAIN" [Loc_Partly_Var] "END_VAR";
+terminator nonempty Loc_Partly_Var ";";     -- specify nonempty here, because empty will be covered by Any_Var_Decl.
+  Loc_Partly_Var. Loc_Partly_Var ::= Identifier "AT" IQM "*" ":" Var_Spec;
+    token IQM '%' ('I' | 'Q' | 'M');
+
+Temp_Var_Decls. Temp_Var_Decls ::= "VAR_TEMP" [Temp_Var_Decl] "END_VAR";
+terminator Temp_Var_Decl ";";
+  rules Temp_Var_Decl ::= Var_Decl | Ref_Var_Decl; -- | Interface_Var_Decl; -- Covered by Var_Decl -> Var_Spec -> [Accessor].
+    Ref_Var_Decl. Ref_Var_Decl ::= [Identifier] ":" Ref_Spec;
+    -- Interface_Var_Decl. Interface_Var_Decl ::= [Identifier] ":" [Accessor];
+
+External_Var_Decls.          External_Var_Decls ::= "VAR_EXTERNAL" [External_Decl] "END_VAR";
+Constant_External_Var_Decls. External_Var_Decls ::= "VAR_EXTERNAL" "CONSTANT" [External_Decl] "END_VAR";
+terminator External_Decl ";";
+  rules External_Decl ::= Identifier ":" Elem_Type_Name
+                        | Identifier ":" Array_Spec
+                        | Identifier ":" [Accessor];
+
+Global_Var_Decls.          Global_Var_Decls ::= "VAR_GLOBAL" [Global_Var_Decl] "END_VAR";
+Retain_Global_Var_Decls.   Global_Var_Decls ::= "VAR_GLOBAL" "RETAIN" [Global_Var_Decl] "END_VAR";
+Constant_Global_Var_Decls. Global_Var_Decls ::= "VAR_GLOBAL" "CONSTANT" [Global_Var_Decl] "END_VAR";
+terminator Global_Var_Decl ";";
+  Global_Var_Decl. Global_Var_Decl ::= Global_Var_Spec ":" Loc_Var_Spec_Init; -- | Global_Var_Spec ":" FB_Type_Access;  -- covered by Loc_Var_Spec_Init -> Unknown_Spec_Init -> [Accessor].
+    rules Global_Var_Spec ::= [Identifier] | Identifier Located_At;
+    rules Loc_Var_Spec_Init ::= Simple_Spec_Init | Array_Spec1 | Struct_Spec_Init | Unknown_Spec_Init; -- | Str_Var_Spec_Init; -- Str_Var_Spec_Init is covered by Simple_Spec_Init
+
+rules Var_Spec ::= Elem_Type_Name | Array_Spec | [Accessor];
+
+
+-- Table 16 - Directly represented variables
+Direct_Variable. Direct_Variable ::= IQM_DV_Option [UnsignedInt]; --"%" IQM DV_Option [UnsignedInt];
+token IQM_DV_Option '%' ('I' | 'Q' | 'M') ('X' | 'B' | 'W' | 'D' | 'L')?;
+--rules DV_Option ::= {- empty -} | "X" | "B" | "W" | "D" | "L";
+separator nonempty UnsignedInt ".";
+
+
+-- Table 19 - Function declaration
+--Func_Decl. Func_Decl ::= "FUNCTION" Identifier ":" Data_Type_Access [Using_Directive] [In_Func_Method_Decls] Func_Body "END_FUNCTION";
+rules Func_Name ::= Identifier | And | "XOR" | "OR" | "NOT" | "MOD"; --IAnd. Identifier1 ::= "OR"; IAnd. Identifier1 ::= "AND"
+Func_Decl_Interface. Func_Decl ::= "FUNCTION" Func_Name ":" Data_Type_Access [Using_Directive] [In_Func_Method_Decls] "END_FUNCTION";
+Func_Decl_Body. Func_Decl ::= "FUNCTION" Identifier Func_Body "END_FUNCTION";
+terminator In_Func_Method_Decls "";
+rules In_Func_Method_Decls ::= IO_Var_Decls | External_Var_Decls | Temp_Var_Decls | Var_Decls; --Add check that In_Func_Method_Decls->Var_Decls is not "RETAIN" or "NON_RETAIN".
+rules IO_Var_Decls ::= Input_Decls | Output_Decls | In_Out_Decls;
+terminator IO_Var_Decls "";
+rules Func_Body ::= Ladder_Diagram | FB_Diagram | Instruction_List | [Stmt] | Other_Languages;
+
+
+-- Table 40 – Function block type declaration
+-- Table 41 - Function block instance declaration
+FB_Decl.         FB_Decl ::= "FUNCTION_BLOCK" Final_Abstract_Opt Identifier [Using_Directive] Extends_FB_Opt Implements_Opt
+                             [FB_Decl_Inner] [Method_Decl] FB_Body "END_FUNCTION_BLOCK";
+terminator FB_Decl_Inner "";
+rules FB_Decl_Inner ::= IO_Var_Decls | External_Var_Decls | Temp_Var_Decls | Loc_Partly_Var_Decl | Var_Decls;
+rules FB_Body ::= SFC | Ladder_Diagram | FB_Diagram | Instruction_List | [Stmt] | Other_Languages;
+terminator Method_Decl "";
+Method_Decl. Method_Decl ::= "METHOD" Access_Spec Final_Abstract_Opt Override_Opt Identifier Data_Type_Access_Opt [In_Func_Method_Decls] Func_Body "END_METHOD";
+
+
+-- Table 48 - Class
+-- Table 50 Textual call of methods – Formal and non-formal parameter list
+Class_Decl. Class_Decl ::= "CLASS" Final_Abstract_Opt Identifier [Using_Directive] Extends_C_Opt Implements_Opt
+                           [Class_Decl_Inner] [Method_Decl] "END_CLASS";
+terminator Class_Decl_Inner "";
+rules Class_Decl_Inner ::= External_Var_Decls | Loc_Partly_Var_Decl | Var_Decls;
+Interface_Decl. Interface_Decl ::= "INTERFACE" Identifier [Using_Directive] Extends_I_Opt [Method_Prototype] "END_INTERFACE";
+terminator Method_Prototype "";
+Method_Prototype. Method_Prototype ::= "METHOD" Identifier Data_Type_Access_Opt [IO_Var_Decls] "END_METHOD";
+Public.    Access_Spec ::= "PUBLIC";
+Protected. Access_Spec ::= "PROTECTED";
+Private.   Access_Spec ::= "PRIVATE";
+Internal.  Access_Spec ::= "INTERNAL";
+
+
+-- Table 47 - Program declaration
+terminator nonempty Prog_Decl "";
+Prog_Decl. Prog_Decl ::= "PROGRAM" Prog_Name [Prog_Decl_Inner] FB_Body "END_PROGRAM";
+Named_Prog.   Prog_Name ::= Identifier;
+Init_Prog.    Prog_Name ::= "_INIT";
+Cyclic_Prog.  Prog_Name ::= "_CYCLIC" ;
+Exit_Prog.    Prog_Name ::= "_EXIT";
+terminator Prog_Decl_Inner "";
+terminator nonempty Prog_Decl_Inner1 "";
+_. Prog_Decl_Inner1 ::= Prog_Decl_Inner;
+rules Prog_Decl_Inner ::= IO_Var_Decls | External_Var_Decls | Temp_Var_Decls | Prog_Access_Decls | Loc_Partly_Var_Decl | Var_Decls | Loc_Var_Decls | Weird_Access_Map;
+Weird_Access_Map. Weird_Access_Map ::= Accessor "ACCESS ADR" "(" Symbolic_Variable ")" ";"; -- Not part of the standard, but in the code we parse. I don't know what it does...
+Prog_Access_Decls. Prog_Access_Decls ::= "VAR_ACCESS" [Prog_Access_Decl] "END_VAR";
+terminator Prog_Access_Decl ";";
+Prog_Access_Decl. Prog_Access_Decl ::= Identifier ":" Symbolic_Variable Multibit_Part_Access_Opt ":" Data_Type_Access Access_Direction_Opt;
+
+-- Table 54 - 61 - Sequential Function Chart (SFC)
+SFC. SFC ::= [Sfc_Network];
+terminator nonempty Sfc_Network "";
+Sfc_Network. Sfc_Network ::= Initial_Step [Sfc_Network_Inner];
+terminator Sfc_Network_Inner "";
+rules Sfc_Network_Inner ::= Step | Transition | Action;
+Initial_Step. Initial_Step ::= "INITIAL_STEP" Identifier ":" [Action_Association] "END_STEP";
+Step. Step ::= "STEP" Identifier ":" [Action_Association] "END_STEP";
+terminator Action_Association ";";
+Action_Association. Action_Association ::= Identifier "(" Action_Qualifier_Opt [Indicator_Name] ")";
+rules Action_Qualifier_Opt ::= {- empty -};-- | "N" | "R" | "S" | "P" | "L" "," Action_Time     --- Yes, we ignore this to avoid reserving "N", ect. as keywords.
+                                           --| "D," Action_Time  | "SD," Action_Time            --- Fix this properly, if Action_Association is actually used.
+                                           --| "DS," Action_Time  | "SL," Action_Time;
+--rules Action_Time ::= Duration | Identifier;
+[].  [Indicator_Name] ::= ;
+(:). [Indicator_Name] ::= "," Indicator_Name [Indicator_Name] ;
+Indicator_Name. Indicator_Name ::= Identifier;
+Transition. Transition ::= "TRANSITION" Transition_Name_Opt Priority_Opt "FROM" [Steps] "TO" [Steps] ":" Transition_Cond "END_TRANSITION";
+rules Transition_Name_Opt ::= {- empty -} | Identifier;
+rules Priority_Opt ::= {- empty -} | "(" "PRIORITY" ":=" UnsignedInt ")";
+(:[]).      [Steps]  ::= Steps;                       -- Steps ::= Identifier | "(" Identifier ( "," Identifier )+ ")";
+(:).        [Steps]  ::= "(" Steps "," [Steps1] ")";
+_.           Steps   ::= Steps1;
+Steps_Ident. Steps1  ::= Identifier;
+(:[]).      [Steps1] ::= Steps1;
+(:).        [Steps1] ::= Steps1 "," [Steps1];
+rules Transition_Cond ::= ":=" Exp ";" | ":" FBD_Network | ":" LD_Rung | ":=" IL_Simple_Inst;
+Action. Action ::= "ACTION" Identifier ":" FB_Body "END_ACTION";
+terminator nonempty Action "";
+
+
+-- Table 62 - Configuration and resource declaration
+Config_Decl. Config_Decl ::= "CONFIGURATION" Identifier Global_Var_Decls_Opt Config_Decl_Inner Access_Decls_Opt Config_Init_Opt "END_CONFIGURATION";
+rules Config_Decl_Inner ::= Single_Resource_Decl | [Resource_Decl];
+terminator nonempty Resource_Decl "";
+Resource_Decl. Resource_Decl ::= "RESOURCE" Identifier "ON" Identifier Global_Var_Decls_Opt Single_Resource_Decl "END_RESOURCE";
+Single_Resource_Decl. Single_Resource_Decl ::= [Task_Config] [Prog_Config];
+Access_Decls. Access_Decls ::= "VAR_ACCESS" [Access_Decl] "END_VAR";
+rules Access_Decls_Opt ::= {- empty -} | Access_Decls;
+terminator Access_Decl ";";
+Access_Decl. Access_Decl ::= Identifier ":" Access_Path ":" Data_Type_Access Access_Direction_Opt;
+rules Access_Path ::= Direct_Variable
+                    | Accessor "." Direct_Variable
+                    | Symbolic_Variable;
+Prog_Output_Access. Prog_Output_Access ::= Identifier "." Symbolic_Variable;
+rules Access_Direction_Opt ::= {- empty -} | "READ_WRITE" | "READ_ONLY";
+terminator Task_Config ";";
+Task_Config. Task_Config ::= "TASK" Identifier Task_Init;
+Task_Init. Task_Init ::= "(" Single_Data_Source_Opt Interval_Data_Source_Opt "PRIORITY" ":=" UnsignedInt ")";
+rules Single_Data_Source_Opt ::= {- empty -} | "SINGLE" ":=" Data_Source ",";
+rules Interval_Data_Source_Opt ::= {- empty -} | "INTERVAL" ":=" Data_Source ",";
+rules Data_Source ::= Constant | Identifier | Prog_Output_Access | Direct_Variable;
+terminator nonempty Prog_Config ";";
+Prog_Config.            Prog_Config ::= "PROGRAM" Identifier With_Opt ":" [Accessor] [Prog_Conf_Elem];
+Retain_Prog_Config.     Prog_Config ::= "PROGRAM" "RETAIN" Identifier With_Opt ":" [Accessor] [Prog_Conf_Elem];
+Non_Retain_Prog_Config. Prog_Config ::= "PROGRAM" "NON_RETAIN" Identifier With_Opt ":" [Accessor] [Prog_Conf_Elem];
+rules With_Opt ::= {- empty -} | "WITH" Identifier;
+[].    [Prog_Conf_Elem] ::= ;
+(:[]). [Prog_Conf_Elem] ::= "(" Prog_Conf_Elem ")";
+(:).   [Prog_Conf_Elem] ::= "(" Prog_Conf_Elem "," [Prog_Conf_Elem1] ")";
+_.      Prog_Conf_Elem  ::= Prog_Conf_Elem1;
+separator nonempty Prog_Conf_Elem1 ",";
+rules Prog_Conf_Elem1 ::= FB_Task | Prog_Cnxn;
+FB_Task. FB_Task ::= [Accessor] [Deref] "WITH" Identifier;
+rules Prog_Cnxn ::= Symbolic_Variable ":=" Prog_Data_Source | Symbolic_Variable "=>" Data_Sink;
+rules Prog_Data_Source ::= Constant | Enum_Value | Identifier "." Identifier | Identifier "." Identifier "." Identifier | Direct_Variable;
+rules Data_Sink ::= Identifier | Identifier "." Identifier | Identifier "." Identifier "." Identifier | Direct_Variable;
+--rules Global_Var_Access ::= Identifier | Identifier "." Identifier | Identifier "." Identifier "." Identifier;
+rules Config_Init_Opt ::= {- empty -} | "VAR_CONFIG" [Config_Inst_Init] "END_VAR";
+terminator Config_Inst_Init ";";
+rules Config_Inst_Init ::= Identifier "." Identifier "." [Accessor] [Deref_Access] Located_At_Opt ":" Loc_Var_Spec_Init
+                         | Identifier "." Identifier "." [Accessor] [Deref_Access] [Deref1] ":" [Accessor] ":=" Struct_Init;
+
+Deref_Access. Deref_Access ::= [Deref1] "." [Accessor];
+terminator Deref_Access "";
+
+
+-- Table 64 - Namespace
+Namespace_Decl.          Namespace_Decl ::= "NAMESPACE" [Accessor] [Using_Directive] [Namespace_Element] "END_NAMESPACE";
+Namespace_Decl_Internal. Namespace_Decl ::= "NAMESPACE" "INTERNAL" [Accessor] [Using_Directive] [Namespace_Element] "END_NAMESPACE";
+terminator nonempty Namespace_Element "";
+rules Namespace_Element ::= Data_Type_Decl | Func_Decl | FB_Decl | Class_Decl | Interface_Decl | Namespace_Decl;
+
+Using_Directive. Using_Directive ::= "USING" [Accessor_List] ";";
+terminator Using_Directive "";
+
+POU_Decl. POU_Decl ::= [Using_Directive] [POU_Decl_Inner];
+terminator nonempty POU_Decl_Inner "";
+rules POU_Decl_Inner ::= Global_Var_Decls | Data_Type_Decl | Access_Decls | Func_Decl | FB_Decl | Class_Decl | Interface_Decl | Namespace_Decl;
+
+
+-- Table 67 - 70 - Instruction List (IL)
+Instruction_List.  Instruction_List ::= "Instruction_List";
+IL_Simple_Inst. IL_Simple_Inst ::= "IL_Simple_Inst";
+-- The rest of IL is not yet included...
+
+
+-- Table 71 - 72 - Language Structured Text (ST)
+Constant_Expr. Constant_Expr ::= Exp; -- a constant expression must evaluate to a constant value at compile time
+Eor.        Exp  ::= Exp "OR" Exp1;
+Exor.       Exp1 ::= Exp1 "XOR" Exp2;
+token And '&' | {"AND"};
+Eand.       Exp2 ::= Exp2 And Exp3;
+Eeq.        Exp3 ::= Exp3 "=" Exp4;
+Eneq.       Exp3 ::= Exp3 "<>" Exp4;
+Elt.        Exp4 ::= Exp4 "<" Exp5;
+Egt.        Exp4 ::= Exp4 ">" Exp5;
+Ele.        Exp4 ::= Exp4 "<=" Exp5;
+Ege.        Exp4 ::= Exp4 ">=" Exp5;
+Eplus.      Exp5 ::= Exp5 "+" Exp6;
+Eminus.     Exp5 ::= Exp5 "-" Exp6;
+Etimes.     Exp6 ::= Exp6 "*" Exp7;
+Ediv.       Exp6 ::= Exp6 "/" Exp7;
+Emod.       Exp6 ::= Exp6 "MOD" Exp7;
+Epow.       Exp7 ::= Exp7 "**" Exp8;
+Euminus.    Exp8 ::= "-" Exp9;
+Euplus.     Exp8 ::= "+" Exp9;
+Enot.       Exp8 ::= "NOT" Exp9;
+Econst.     Exp9 ::= Constant1;
+Eenum.      Exp9 ::= Identifier "#" Identifier; -- Enum_Value;
+Evaracc.    Exp9 ::= Variable Multibit_Part_Access_Opt;
+Efunccall.  Exp9 ::= [Accessor] "(" [Param_Assign] ")";
+--Eadr.       Exp9 ::= ADR_Access;
+Erefval.    Exp9 ::= Ref_Value;
+coercions Exp 9;
+
+separator Param_Assign ",";
+Param_Assign_Exp. Param_Assign ::= Exp;
+In_Param_Assign. Param_Assign ::= Identifier ":=" Exp;
+Out_Param_Assign. Param_Assign ::= Identifier "=>" Variable;
+Negated_Out_Param_Assign. Param_Assign ::= "NOT" Identifier "=>" Variable; -- Ref_Assign is covered by Identifier ":=" Exp.
+
+Multibit_Part_Access.       Multibit_Part_Access ::= "." UnsignedInt;
+Multibit_Part_Access_Token. Multibit_Part_Access ::= "." MPAtoken UnsignedInt;
+token MPAtoken '%' ( 'X' | 'B' | 'W' | 'D' | 'L' ) ? ;
+
+terminator Stmt "";
+_. Stmt ::= Stmt ";";
+Action_Call. Stmt ::= Identifier ";"; -- Non standard, but part of the code we parse.
+Assign_Stmt. Stmt ::= Variable Multibit_Part_Access_Opt ":=" Exp ";";
+Assignment_Attempt. Stmt ::= Accessor [Deref1] "?=" Assignment_Attempt_RHS ";";
+Assignment_Attempt2. Stmt ::= Accessor "?=" Assignment_Attempt_RHS ";";
+    rules Assignment_Attempt_RHS ::= Identifier [Deref] | Ref_Value;
+Invocation_Stmt. Stmt ::= Symbolic_Variable "(" [Param_Assign] ")" ";";
+  {-  rules Invocation_Access ::= [Accessor] | Accessor [Deref1] | Accessor [Deref_Access1]
+                              | Accessor "." [Accessor] [Deref1] | Accessor "." [Accessor] [Deref_Access1]
+                              | "THIS" "." [Accessor] [Deref_Access1];--[Var_Access] "." Identifier; -}
+This_Invocation. Stmt ::= "THIS" "(" [Param_Assign] ")" ";";
+Super_Stmt. Stmt ::= "SUPER" "(" ")" ";";
+Return_Stmt. Stmt ::= "RETURN" ";";
+If_Stmt. Stmt ::= "IF" Exp "THEN" [Stmt] [Else_If] Else_Opt "END_IF";
+    terminator Else_If "";
+    Else_If. Else_If ::= "ELSIF" Exp "THEN" [Stmt];
+    Else_None. Else_Opt ::= {- empty -};
+    Else.      Else_Opt ::= "ELSE" [Stmt];
+Case_Stmt. Stmt ::= "CASE" Exp "OF" [Case_Selection] Else_Opt "END_CASE";
+    terminator nonempty Case_Selection "";
+    Case_Selection. Case_Selection ::= [Case_List_Elem] ":" [Stmt];
+    separator nonempty Case_List_Elem ",";
+    Case_Elem_Subrange.   Case_List_Elem ::= Subrange;
+    Case_Elem_Const_Expr. Case_List_Elem ::= Constant_Expr;
+For_Stmt. Stmt ::= "FOR" Identifier ":=" For_List "DO" [Stmt] "END_FOR";
+    For_List_To.    For_List ::= Exp "TO" Exp;
+    For_List_To_By. For_List ::= Exp "TO" Exp "BY" Exp;
+While_Stmt. Stmt ::= "WHILE" Exp "DO" [Stmt] "END_WHILE";
+Repeat_Stmt. Stmt ::= "REPEAT" [Stmt] "UNTIL" Exp "END_REPEAT";
+Exit_Stmt. Stmt ::= "EXIT" ";";
+Continue_Stmt. Stmt ::= "CONTINUE" ";";
+
+
+-- Table 73 - 76 - Graphic languages elements
+Ladder_Diagram. Ladder_Diagram ::= [LD_Rung];
+terminator nonempty LD_Rung "";
+LD_Rung. LD_Rung ::= "LD_Rung";
+FB_Diagram. FB_Diagram ::= [FBD_Network];
+terminator nonempty FBD_Network "";
+FBD_Network. FBD_Network ::= "FBD_Network";
+Other_Languages. Other_Languages ::= "Other_Languages";
+-- These are not properly defined here!
+
+
+-- Helper rules
+rules Overlap_Opt ::= {- empty -} | "OVERLAP";
+rules Final_Abstract_Opt ::= {- empty -} | "FINAL" | "ABSTRACT";
+rules Extends_FB_Opt ::= {- empty -} | "EXTENDS" [Accessor];
+rules Extends_C_Opt ::= {- empty -} | "EXTENDS" [Accessor];
+rules Extends_I_Opt ::= {- empty -} | "EXTENDS" [Accessor_List];
+rules Implements_Opt ::= {- empty -} | "IMPLEMENTS" [Accessor_List];
+rules Override_Opt ::= {- empty -} | "OVERRIDE";
+rules Data_Type_Access_Opt ::= {- empty -} | ":" Data_Type_Access;
+rules Multibit_Part_Access_Opt ::= {- empty -} | Multibit_Part_Access;
+String_Bracket_Empty. String_Bracket_Opt ::= {- empty -};
+String_Bracket_UInt.  String_Bracket_Opt ::= "[" UnsignedInt "]";
+String_Bracket_Ident. String_Bracket_Opt ::= "[" Identifier "]";
+rules Global_Var_Decls_Opt ::= {- empty -} | Global_Var_Decls;
+rules Located_At_Opt ::= {- empty -} | Located_At;
+
+
+-- Table 2 - Identifiers
+separator nonempty Identifier "," ;
+token Identifier (letter | '_') (letter | digit | '_' )*; -- NOTE: Keep this at the bottom, to avoid shadowing other tokens.

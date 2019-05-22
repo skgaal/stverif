@@ -1,0 +1,19 @@
+comment "%" ;
+comment "/*" "*/" ;
+
+token Var  ((upper | '_') (letter | digit | '_')*) ;
+token Atom (lower (letter | digit | '_')*) ;
+
+entrypoints Database;
+
+Db       . Database ::= [Clause] ;
+Fact     . Clause ::= Predicate ;
+Rule     . Clause ::= Predicate ":-" [Predicate] ;
+APred    . Predicate ::= Atom ;
+CPred    . Predicate ::= Atom "(" [Term] ")" ;
+TAtom    . Term ::= Atom ;
+VarT     . Term ::= Var ;
+Complex  . Term ::= Atom "(" [Term] ")" ;
+terminator Clause "." ;
+separator nonempty Predicate "," ;
+separator nonempty Term "," ;
