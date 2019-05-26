@@ -1,18 +1,3 @@
-
---  This file is part of stverif
---
---  stverif is free software: you can redistribute it and/or modify
---  it under the terms of the GNU General Public License as published by
---  the Free Software Foundation, either version 3 of the License, or
---  (at your option) any later version.
---
---  stverif is distributed in the hope that it will be useful,
---  but WITHOUT ANY WARRANTY; without even the implied warranty of
---  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
---  GNU General Public License for more details.
---
---  You should have received a copy of the GNU General Public License
---  along with stverif.  If not, see <https://www.gnu.org/licenses/>.
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DeriveDataTypeable #-}
@@ -60,7 +45,7 @@ compilerFunction v o fs maxt t e i = do
       when (v>=1) $ liftIO $ putStrLn $ "\n**** Unknown Functions : " ++ o ++ " ****"
       maybemap <- liftIO $ maybeknowns
       when (v>=1) $ liftIO $ putStr . unlines $ map (\(inst, name) -> show inst ++ " : " ++ name ++ getUknownTiming maybemap name) $ M.toList unknownmap
-      liftIO $ writeFile (o ++ (if e then ".tapn" else ".xml")) $ makePetriNet e o maxt irProgram unknownmap
+      liftIO $ writeFile (o ++ (if e then ".tapn" else ".xml")) $ makePetriNet e o maxt irProgram unknownmap maybemap
       endtime <- liftIO $ getPOSIXTime
       when t $ liftIO $ putStrLn $ o ++ " : " ++ show (endtime - starttime)
       return ()

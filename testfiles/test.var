@@ -1,0 +1,13 @@
+
+VAR
+    n : INT;
+    k : REAL;
+    a : REAL;
+    b : REAL;
+    CtrlLEFT : REAL;
+    CtrlRIGHT : REAL;
+    enableCtrlValves : My_Struct;
+    RightValve : Valve;
+    LeftValve : Valve;
+    ValveCtrl : INT;
+END_VAR

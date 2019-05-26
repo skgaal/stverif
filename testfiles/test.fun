@@ -1,0 +1,6 @@
+
+FUNCTION I_TO_R : REAL
+    VAR_INPUT
+        IN : INT;
+    END_VAR
+END_FUNCTION

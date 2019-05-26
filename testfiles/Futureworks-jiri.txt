@@ -1,0 +1,18 @@
+Future:
+
+Concurrency
+	is easy, because p/n
+	"Why not use TA?"
+
+Program slicing
+	Remove parts
+	"Is the variable >0 or <0?"
+	Which parts of the program is important?
+
+
+CEGAR
+
+
+More queries
+
+
