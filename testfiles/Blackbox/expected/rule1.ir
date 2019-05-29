@@ -1,0 +1,8 @@
+CYCLIC_start: vi0 :=i vi_b; goto l0
+l0: vr0 :=r vr_c; goto l1
+l1: vr1 :r=i vi_d; goto l2
+l2: vr0 *=r vr1; goto l3
+l3: vr2 :r=i vi0; goto l4
+l4: vr2 +=r vr0; goto l5
+l5: vi_a :i=r vr2; goto CYCLIC_end
+CYCLIC_end: return

@@ -54,3 +54,5 @@ src/PLCparser/buildsystem
 
 *.tapn
 *.ir
+!testfiles/Blackbox/expected/*.tapn
+!testfiles/Blackbox/expected/*.ir

@@ -1,0 +1,9 @@
+Func_start: vi0 :=i vi_varx; goto l0
+l0: vi0 +=i 2; goto l1
+l1: vi_Func :=i vi0; goto Func_end
+Func_end: return
+CYCLIC_start: vi_Func__varx :=i vi_x; goto l2
+l2: call Func_start Func_end; goto l3
+l3: vi1 :=i vi_Func; goto l4
+l4: vi_a :=i vi1; goto CYCLIC_end
+CYCLIC_end: return

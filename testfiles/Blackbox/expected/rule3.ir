@@ -1,0 +1,4 @@
+Action_start: vi_a :=i vi_b; goto Action_end
+Action_end: return
+CYCLIC_start: call Action_start Action_end; goto CYCLIC_end
+CYCLIC_end: return
