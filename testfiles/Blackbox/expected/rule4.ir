@@ -1,4 +1,4 @@
-Func_start: vi0 :=i vi_varx; goto l0
+Func_start: vi0 :=i vi_Func__varx; goto l0
 l0: vi0 +=i 2; goto l1
 l1: vi_Func :=i vi0; goto Func_end
 Func_end: return
