@@ -1,0 +1,3 @@
+PROGRAM _CYCLIC
+    a := Func(x);
+END_PROGRAM

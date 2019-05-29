@@ -1,0 +1,8 @@
+VAR
+	a : INT;
+	b : INT;
+	c : REAL;
+	d : INT;
+	x : INT;
+	y : REAL;
+END_VAR
