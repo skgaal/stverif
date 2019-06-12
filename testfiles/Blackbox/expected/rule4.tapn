@@ -1,1 +1,151 @@
-<?xml version='1.0' encoding='UTF-8' standalone='no'?> <pnml> <constant name='t' value='12500'/><net active='true' id='rule41' type='P/T net'><place id='Func_start' initialMarking='0' invariant='&lt;= 4' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0'/><place id='l0' initialMarking='0' invariant='&lt;= 4' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0'/><place id='l1' initialMarking='0' invariant='&lt;= 4' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0'/><place id='Func_end' initialMarking='0' invariant='&lt;= 15' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0'/><place id='CYCLIC_start' initialMarking='0' invariant='&lt;= 4' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0'/><place id='l2' initialMarking='0' invariant='&lt;= 4' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0'/><place id='l2p' initialMarking='0' invariant='&lt; inf' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0'/><place id='l3' initialMarking='0' invariant='&lt;= 4' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0'/><place id='l4' initialMarking='0' invariant='&lt;= 4' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0'/><place id='CYCLIC_end' initialMarking='0' invariant='&lt;= 15' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0'/><transition angle='0' id='TFunc_start' name='TFunc_start' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0' priority='0'/><transition angle='0' id='Tl0' name='Tl0' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0' priority='0'/><transition angle='0' id='Tl1' name='Tl1' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0' priority='0'/><transition angle='0' id='TCYCLIC_start' name='TCYCLIC_start' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0' priority='0'/><transition angle='0' id='Tl2' name='Tl2' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0' priority='0'/><transition angle='0' id='Tl2Func_end' name='Tl2Func_end' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0' priority='0'/><transition angle='0' id='Tl3' name='Tl3' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0' priority='0'/><transition angle='0' id='Tl4' name='Tl4' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0' priority='0'/><arc id='Func_start to TFunc_start' inscription='[4,4]' nameOffsetX='0' nameOffsetY='0' source='Func_start' target='TFunc_start' type='timed' weight='1'/><arc id='TFunc_start to l0' inscription='1'                nameOffsetX='0' nameOffsetY='0' source='TFunc_start' target='l0' type='normal' weight='1'/><arc id='l0 to Tl0' inscription='[4,4]' nameOffsetX='0' nameOffsetY='0' source='l0' target='Tl0' type='timed' weight='1'/><arc id='Tl0 to l1' inscription='1'                nameOffsetX='0' nameOffsetY='0' source='Tl0' target='l1' type='normal' weight='1'/><arc id='l1 to Tl1' inscription='[4,4]' nameOffsetX='0' nameOffsetY='0' source='l1' target='Tl1' type='timed' weight='1'/><arc id='Tl1 to Func_end' inscription='1'                nameOffsetX='0' nameOffsetY='0' source='Tl1' target='Func_end' type='normal' weight='1'/><arc id='CYCLIC_start to TCYCLIC_start' inscription='[4,4]' nameOffsetX='0' nameOffsetY='0' source='CYCLIC_start' target='TCYCLIC_start' type='timed' weight='1'/><arc id='TCYCLIC_start to l2' inscription='1'                nameOffsetX='0' nameOffsetY='0' source='TCYCLIC_start' target='l2' type='normal' weight='1'/><arc id='l2 to Tl2' inscription='[4,4]' nameOffsetX='0' nameOffsetY='0' source='l2' target='Tl2' type='timed' weight='1'/><arc id='l2p to Tl2Func_end' inscription='[0,inf)' nameOffsetX='0' nameOffsetY='0' source='l2p' target='Tl2Func_end' type='timed' weight='1'/><arc id='Func_end to Tl2Func_end' inscription='[15,15]' nameOffsetX='0' nameOffsetY='0' source='Func_end' target='Tl2Func_end' type='timed' weight='1'/><arc id='Tl2 to l2p' inscription='1'                nameOffsetX='0' nameOffsetY='0' source='Tl2' target='l2p' type='normal' weight='1'/><arc id='Tl2 to Func_start' inscription='1'                nameOffsetX='0' nameOffsetY='0' source='Tl2' target='Func_start' type='normal' weight='1'/><arc id='Tl2Func_end to l3' inscription='1'                nameOffsetX='0' nameOffsetY='0' source='Tl2Func_end' target='l3' type='normal' weight='1'/><arc id='l3 to Tl3' inscription='[4,4]' nameOffsetX='0' nameOffsetY='0' source='l3' target='Tl3' type='timed' weight='1'/><arc id='Tl3 to l4' inscription='1'                nameOffsetX='0' nameOffsetY='0' source='Tl3' target='l4' type='normal' weight='1'/><arc id='l4 to Tl4' inscription='[4,4]' nameOffsetX='0' nameOffsetY='0' source='l4' target='Tl4' type='timed' weight='1'/><arc id='Tl4 to CYCLIC_end' inscription='1'                nameOffsetX='0' nameOffsetY='0' source='Tl4' target='CYCLIC_end' type='normal' weight='1'/><place id='watchdog_start__' initialMarking='1' invariant='&lt;= 0' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0'/><place id='watchdog_watch__' initialMarking='0' invariant='&lt;= **PLACEHOLDER**' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0'/><place id='watchdog_ok__' initialMarking='0' invariant='&lt; inf' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0'/><place id='watchdog_not_ok__' initialMarking='0' invariant='&lt;= 0' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0'/><transition angle='0' id='Twatchdog_T1' name='Twatchdog_T1' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0' priority='0'/><transition angle='0' id='Twatchdog_T2' name='Twatchdog_T2' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0' priority='0'/><transition angle='0' id='Twatchdog_T3' name='Twatchdog_T3' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0' priority='0'/><transition angle='0' id='Twatchdog_T4' name='Twatchdog_T4' nameOffsetX='-5' nameOffsetY='35' positionX='0' positionY='0' priority='0'/><arc id='watchdog_start__ to Twatchdog_T1' inscription='[0,0]' nameOffsetX='0' nameOffsetY='0' source='watchdog_start__' target='Twatchdog_T1' type='timed' weight='1'/><arc id='watchdog_watch__ to Twatchdog_T2' inscription='[0,inf)' nameOffsetX='0' nameOffsetY='0' source='watchdog_watch__' target='Twatchdog_T2' type='timed' weight='1'/><arc id='CYCLIC_end to Twatchdog_T2' inscription='[0,inf)' nameOffsetX='0' nameOffsetY='0' source='CYCLIC_end' target='Twatchdog_T2' type='timed' weight='1'/><arc id='watchdog_watch__ to Twatchdog_T3' inscription='[**PLACEHOLDER**,inf)' nameOffsetX='0' nameOffsetY='0' source='watchdog_watch__' target='Twatchdog_T3' type='timed' weight='1'/><arc id='watchdog_ok__ to Twatchdog_T4' inscription='[0,inf)' nameOffsetX='0' nameOffsetY='0' source='watchdog_ok__' target='Twatchdog_T4' type='timed' weight='1'/><arc id='Twatchdog_T1 to watchdog_watch__' inscription='1'                nameOffsetX='0' nameOffsetY='0' source='Twatchdog_T1' target='watchdog_watch__' type='normal' weight='1'/><arc id='Twatchdog_T1 to CYCLIC_start' inscription='1'                nameOffsetX='0' nameOffsetY='0' source='Twatchdog_T1' target='CYCLIC_start' type='normal' weight='1'/><arc id='Twatchdog_T2 to watchdog_ok__' inscription='1'                nameOffsetX='0' nameOffsetY='0' source='Twatchdog_T2' target='watchdog_ok__' type='normal' weight='1'/><arc id='Twatchdog_T3 to watchdog_not_ok__' inscription='1'                nameOffsetX='0' nameOffsetY='0' source='Twatchdog_T3' target='watchdog_not_ok__' type='normal' weight='1'/><arc id='Twatchdog_T4 to watchdog_ok__' inscription='1'                nameOffsetX='0' nameOffsetY='0' source='Twatchdog_T4' target='watchdog_ok__' type='normal' weight='1'/></net><query active='true' approximationDenominator='2' capacity='4' discreteInclusion='false' enableOverApproximation='false' enableUnderApproximation='false' extrapolationOption='null' gcd='false' hashTableSize='null' inclusionPlaces='*NONE*' name='Ever deadlock' overApproximation='false' pTrie='true' query='EF (deadlock)' reduction='true' reductionOption='VerifyTAPNdiscreteVerification' searchOption='HEURISTIC' symmetry='true' timeDarts='false' traceOption='NONE' useStubbornReduction='true'/><query active='true' approximationDenominator='2' capacity='4' discreteInclusion='false' enableOverApproximation='false' enableUnderApproximation='false' extrapolationOption='null' gcd='false' hashTableSize='null' inclusionPlaces='*NONE*' name='AFok' overApproximation='false' pTrie='true' query='AF rule41.watchdog_ok__ = 1' reduction='true' reductionOption='VerifyTAPNdiscreteVerification' searchOption='HEURISTIC' symmetry='true' timeDarts='false' traceOption='NONE' useStubbornReduction='true'/><k-bound bound='3'/></pnml>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<pnml xmlns="http://www.informatik.hu-berlin.de/top/pnml/ptNetb">
+  <constant name="t" value="12500"/>
+  <net active="true" id="rule41" type="P/T net">
+    <place displayName="true" id="Func_start" initialMarking="0" invariant="&lt;= 4" name="Func_start" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="385.0" positionY="560.0"/>
+    <place displayName="true" id="l0" initialMarking="0" invariant="&lt;= 4" name="l0" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="385.0" positionY="703.0"/>
+    <place displayName="true" id="l1" initialMarking="0" invariant="&lt;= 4" name="l1" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="561.0" positionY="704.0"/>
+    <place displayName="true" id="Func_end" initialMarking="0" invariant="&lt;= 15" name="Func_end" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="655.0" positionY="590.0"/>
+    <place displayName="true" id="CYCLIC_start" initialMarking="0" invariant="&lt;= 4" name="CYCLIC_start" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="287.0" positionY="191.0"/>
+    <place displayName="true" id="l2" initialMarking="0" invariant="&lt;= 4" name="l2" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="285.0" positionY="492.0"/>
+    <place displayName="true" id="l2p" initialMarking="0" invariant="&lt; inf" name="l2p" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="487.0" positionY="494.0"/>
+    <place displayName="true" id="l3" initialMarking="0" invariant="&lt;= 4" name="l3" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="653.0" positionY="406.0"/>
+    <place displayName="true" id="l4" initialMarking="0" invariant="&lt;= 4" name="l4" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="481.0" positionY="313.0"/>
+    <place displayName="true" id="CYCLIC_end" initialMarking="0" invariant="&lt;= 15" name="CYCLIC_end" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="611.0" positionY="225.0"/>
+    <place displayName="true" id="watchdog_start__" initialMarking="1" invariant="&lt;= 0" name="watchdog_start__" nameOffsetX="35.0" nameOffsetY="-3.0" positionX="169.0" positionY="103.0"/>
+    <place displayName="true" id="watchdog_watch__" initialMarking="0" invariant="&lt;= t" name="watchdog_watch__" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="465.0" positionY="101.0"/>
+    <place displayName="true" id="watchdog_ok__" initialMarking="0" invariant="&lt; inf" name="watchdog_ok__" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="760.0" positionY="137.0"/>
+    <place displayName="true" id="watchdog_not_ok__" initialMarking="0" invariant="&lt;= 0" name="watchdog_not_ok__" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="760.0" positionY="64.0"/>
+    <transition angle="0" displayName="true" id="TFunc_start" infiniteServer="false" name="TFunc_start" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="385.0" positionY="637.0" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="Tl0" infiniteServer="false" name="Tl0" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="476.0" positionY="703.0" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="Tl1" infiniteServer="false" name="Tl1" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="654.0" positionY="705.0" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="TCYCLIC_start" infiniteServer="false" name="TCYCLIC_start" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="286.0" positionY="342.0" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="Tl2" infiniteServer="false" name="Tl2" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="385.0" positionY="494.0" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="Tl2Func_end" infiniteServer="false" name="Tl2Func_end" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="654.0" positionY="496.0" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="Tl3" infiniteServer="false" name="Tl3" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="482.0" positionY="405.0" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="Tl4" infiniteServer="false" name="Tl4" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="481.0" positionY="223.0" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="Twatchdog_T1" infiniteServer="false" name="Twatchdog_T1" nameOffsetX="-5.0" nameOffsetY="35.0" positionX="286.0" positionY="104.0" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="Twatchdog_T2" infiniteServer="false" name="Twatchdog_T2" nameOffsetX="-1.0" nameOffsetY="30.0" positionX="611.0" positionY="133.0" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="Twatchdog_T3" infiniteServer="false" name="Twatchdog_T3" nameOffsetX="-3.0" nameOffsetY="13.0" positionX="609.0" positionY="64.0" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="Twatchdog_T4" infiniteServer="false" name="Twatchdog_T4" nameOffsetX="56.0" nameOffsetY="50.0" positionX="910.0" positionY="140.0" priority="0" urgent="false"/>
+    <arc id="Func_start to TFunc_start" inscription="[4,4]" nameOffsetX="0.0" nameOffsetY="0.0" source="Func_start" target="TFunc_start" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="397" yCoord="586"/>
+      <arcpath arcPointType="false" id="1" xCoord="397" yCoord="634"/>
+    </arc>
+    <arc id="TFunc_start to l0" inscription="1" nameOffsetX="0.0" nameOffsetY="0.0" source="TFunc_start" target="l0" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="397" yCoord="664"/>
+      <arcpath arcPointType="false" id="1" xCoord="397" yCoord="700"/>
+    </arc>
+    <arc id="l0 to Tl0" inscription="[4,4]" nameOffsetX="0.0" nameOffsetY="0.0" source="l0" target="Tl0" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="411" yCoord="715"/>
+      <arcpath arcPointType="false" id="1" xCoord="482" yCoord="715"/>
+    </arc>
+    <arc id="Tl0 to l1" inscription="1" nameOffsetX="0.0" nameOffsetY="0.0" source="Tl0" target="l1" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="492" yCoord="715"/>
+      <arcpath arcPointType="false" id="1" xCoord="558" yCoord="715"/>
+    </arc>
+    <arc id="l1 to Tl1" inscription="[4,4]" nameOffsetX="0.0" nameOffsetY="0.0" source="l1" target="Tl1" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="587" yCoord="716"/>
+      <arcpath arcPointType="false" id="1" xCoord="660" yCoord="717"/>
+    </arc>
+    <arc id="Tl1 to Func_end" inscription="1" nameOffsetX="0.0" nameOffsetY="0.0" source="Tl1" target="Func_end" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="666" yCoord="702"/>
+      <arcpath arcPointType="false" id="1" xCoord="666" yCoord="617"/>
+    </arc>
+    <arc id="CYCLIC_start to TCYCLIC_start" inscription="[4,4]" nameOffsetX="0.0" nameOffsetY="0.0" source="CYCLIC_start" target="TCYCLIC_start" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="298" yCoord="217"/>
+      <arcpath arcPointType="false" id="1" xCoord="298" yCoord="339"/>
+    </arc>
+    <arc id="TCYCLIC_start to l2" inscription="1" nameOffsetX="0.0" nameOffsetY="0.0" source="TCYCLIC_start" target="l2" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="298" yCoord="369"/>
+      <arcpath arcPointType="false" id="1" xCoord="297" yCoord="489"/>
+    </arc>
+    <arc id="l2 to Tl2" inscription="[4,4]" nameOffsetX="0.0" nameOffsetY="0.0" source="l2" target="Tl2" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="311" yCoord="504"/>
+      <arcpath arcPointType="false" id="1" xCoord="391" yCoord="506"/>
+    </arc>
+    <arc id="l2p to Tl2Func_end" inscription="[0,inf)" nameOffsetX="0.0" nameOffsetY="0.0" source="l2p" target="Tl2Func_end" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="513" yCoord="506"/>
+      <arcpath arcPointType="false" id="1" xCoord="660" yCoord="508"/>
+    </arc>
+    <arc id="Func_end to Tl2Func_end" inscription="[15,15]" nameOffsetX="0.0" nameOffsetY="0.0" source="Func_end" target="Tl2Func_end" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="666" yCoord="587"/>
+      <arcpath arcPointType="false" id="1" xCoord="666" yCoord="523"/>
+    </arc>
+    <arc id="Tl2 to l2p" inscription="1" nameOffsetX="0.0" nameOffsetY="0.0" source="Tl2" target="l2p" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="401" yCoord="506"/>
+      <arcpath arcPointType="false" id="1" xCoord="484" yCoord="506"/>
+    </arc>
+    <arc id="Tl2 to Func_start" inscription="1" nameOffsetX="0.0" nameOffsetY="0.0" source="Tl2" target="Func_start" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="397" yCoord="521"/>
+      <arcpath arcPointType="false" id="1" xCoord="397" yCoord="557"/>
+    </arc>
+    <arc id="Tl2Func_end to l3" inscription="1" nameOffsetX="0.0" nameOffsetY="0.0" source="Tl2Func_end" target="l3" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="666" yCoord="493"/>
+      <arcpath arcPointType="false" id="1" xCoord="665" yCoord="432"/>
+    </arc>
+    <arc id="l3 to Tl3" inscription="[4,4]" nameOffsetX="0.0" nameOffsetY="0.0" source="l3" target="Tl3" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="650" yCoord="417"/>
+      <arcpath arcPointType="false" id="1" xCoord="498" yCoord="417"/>
+    </arc>
+    <arc id="Tl3 to l4" inscription="1" nameOffsetX="0.0" nameOffsetY="0.0" source="Tl3" target="l4" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="494" yCoord="402"/>
+      <arcpath arcPointType="false" id="1" xCoord="493" yCoord="339"/>
+    </arc>
+    <arc id="l4 to Tl4" inscription="[4,4]" nameOffsetX="0.0" nameOffsetY="0.0" source="l4" target="Tl4" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="493" yCoord="310"/>
+      <arcpath arcPointType="false" id="1" xCoord="493" yCoord="250"/>
+    </arc>
+    <arc id="Tl4 to CYCLIC_end" inscription="1" nameOffsetX="0.0" nameOffsetY="0.0" source="Tl4" target="CYCLIC_end" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="497" yCoord="235"/>
+      <arcpath arcPointType="false" id="1" xCoord="608" yCoord="236"/>
+    </arc>
+    <arc id="watchdog_start__ to Twatchdog_T1" inscription="[0,0]" nameOffsetX="0.0" nameOffsetY="0.0" source="watchdog_start__" target="Twatchdog_T1" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="195" yCoord="115"/>
+      <arcpath arcPointType="false" id="1" xCoord="292" yCoord="116"/>
+    </arc>
+    <arc id="watchdog_watch__ to Twatchdog_T2" inscription="[0,inf)" nameOffsetX="19.0" nameOffsetY="-7.0" source="watchdog_watch__" target="Twatchdog_T2" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="491" yCoord="116"/>
+      <arcpath arcPointType="false" id="1" xCoord="617" yCoord="145"/>
+    </arc>
+    <arc id="CYCLIC_end to Twatchdog_T2" inscription="[0,inf)" nameOffsetX="-5.0" nameOffsetY="6.0" source="CYCLIC_end" target="Twatchdog_T2" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="623" yCoord="222"/>
+      <arcpath arcPointType="false" id="1" xCoord="623" yCoord="160"/>
+    </arc>
+    <arc id="watchdog_watch__ to Twatchdog_T3" inscription="[t,inf)" nameOffsetX="0.0" nameOffsetY="0.0" source="watchdog_watch__" target="Twatchdog_T3" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="491" yCoord="109"/>
+      <arcpath arcPointType="false" id="1" xCoord="615" yCoord="76"/>
+    </arc>
+    <arc id="watchdog_ok__ to Twatchdog_T4" inscription="[0,inf)" nameOffsetX="0.0" nameOffsetY="0.0" source="watchdog_ok__" target="Twatchdog_T4" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="785" yCoord="155"/>
+      <arcpath arcPointType="false" id="1" xCoord="808" yCoord="165"/>
+      <arcpath arcPointType="false" id="2" xCoord="875" yCoord="165"/>
+      <arcpath arcPointType="false" id="3" xCoord="916" yCoord="157"/>
+    </arc>
+    <arc id="Twatchdog_T1 to watchdog_watch__" inscription="1" nameOffsetX="0.0" nameOffsetY="0.0" source="Twatchdog_T1" target="watchdog_watch__" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="302" yCoord="116"/>
+      <arcpath arcPointType="false" id="1" xCoord="462" yCoord="113"/>
+    </arc>
+    <arc id="Twatchdog_T1 to CYCLIC_start" inscription="1" nameOffsetX="0.0" nameOffsetY="0.0" source="Twatchdog_T1" target="CYCLIC_start" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="298" yCoord="131"/>
+      <arcpath arcPointType="false" id="1" xCoord="298" yCoord="188"/>
+    </arc>
+    <arc id="Twatchdog_T2 to watchdog_ok__" inscription="1" nameOffsetX="0.0" nameOffsetY="0.0" source="Twatchdog_T2" target="watchdog_ok__" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="627" yCoord="145"/>
+      <arcpath arcPointType="false" id="1" xCoord="757" yCoord="148"/>
+    </arc>
+    <arc id="Twatchdog_T3 to watchdog_not_ok__" inscription="1" nameOffsetX="0.0" nameOffsetY="0.0" source="Twatchdog_T3" target="watchdog_not_ok__" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="625" yCoord="76"/>
+      <arcpath arcPointType="false" id="1" xCoord="757" yCoord="76"/>
+    </arc>
+    <arc id="Twatchdog_T4 to watchdog_ok__" inscription="1" nameOffsetX="0.0" nameOffsetY="0.0" source="Twatchdog_T4" target="watchdog_ok__" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="917" yCoord="147"/>
+      <arcpath arcPointType="false" id="1" xCoord="877" yCoord="123"/>
+      <arcpath arcPointType="false" id="2" xCoord="811" yCoord="120"/>
+      <arcpath arcPointType="false" id="3" xCoord="784" yCoord="140"/>
+    </arc>
+  </net>
+  <query active="true" approximationDenominator="2" capacity="4" discreteInclusion="false" enableOverApproximation="false" enableUnderApproximation="false" extrapolationOption="AUTOMATIC" gcd="false" hashTableSize="MB_16" inclusionPlaces="*NONE*" name="Ever deadlock" overApproximation="false" pTrie="true" query="EF deadlock" reduction="true" reductionOption="VerifyTAPNdiscreteVerification" searchOption="HEURISTIC" symmetry="true" timeDarts="false" traceOption="NONE" useStubbornReduction="true"/>
+  <query active="true" approximationDenominator="2" capacity="4" discreteInclusion="false" enableOverApproximation="false" enableUnderApproximation="false" extrapolationOption="AUTOMATIC" gcd="false" hashTableSize="MB_16" inclusionPlaces="*NONE*" name="AFok" overApproximation="false" pTrie="true" query="AF rule41.watchdog_ok__ = 1" reduction="true" reductionOption="VerifyTAPNdiscreteVerification" searchOption="HEURISTIC" symmetry="true" timeDarts="false" traceOption="NONE" useStubbornReduction="true"/>
+  <k-bound bound="3"/>
+</pnml>
