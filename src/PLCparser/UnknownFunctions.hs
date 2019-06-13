@@ -16,7 +16,7 @@
   -}
 {-# LANGUAGE FlexibleContexts #-}
 
-module PLCparser.UnknownFunctions(addUnknownAndMakeMap, UnknownMap, KnownMap) where
+module PLCparser.UnknownFunctions(addUnknownAndMakeMap, UnknownMap, KnownMap, getUnknownFunctionsTable) where
 
 import Control.Monad.State
 import Data.List(nub, words)
@@ -32,12 +32,12 @@ type UnknownMap = Map Instruction String
 --                map funcname time-interval
 type KnownMap   = Map String   (Integer,Integer)
 
-addUnknownAndMakeMap :: Program -> (Program, UnknownMap, IO (Maybe KnownMap))
+addUnknownAndMakeMap :: Program -> (Program, UnknownMap)
 addUnknownAndMakeMap program =
   let names = findUnknownFunctions program
       inst_names = zip (evalState (replicateM (length names) nextUnknown) 0) names
       new_lines = map (\(inst, name) -> ProgLine (startLabel name) inst (endLabel name)) inst_names in
-    (program ++ new_lines, fromList inst_names, getUnknownFunctionsTable "unknownfunctions.txt")
+    (program ++ new_lines, fromList inst_names)
 
 findUnknownFunctions :: Program -> [String]
 findUnknownFunctions program = map stripStartSuffix . filter isUnknown . nub . functionLabels $ map getInstruction program
