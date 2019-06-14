@@ -16,7 +16,7 @@
   -}
 {-# LANGUAGE RankNTypes #-}
 
-module PLCparser.IRToXml(makePetriNet) where
+module PLCparser.IRToXml(makePetriNet, getUnknownTiming) where
 
 import PLCparser.IntermediateRepresentation
 import PLCparser.UnknownFunctions

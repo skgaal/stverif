@@ -32,6 +32,7 @@ import PLCparser.AstToIR(astToIR, runMonadIR)
 import PLCparser.IntermediateRepresentation(Program, ProgLine(..), printProgram, showProgram)
 import PLCparser.UnknownFunctions(addUnknownAndMakeMap, KnownMap, getUnknownFunctionsTable)
 import PLCparser.IRToXml(makePetriNet)
+import PLCparser.Reduction(performReduction)
 
 import Data.Time.Clock.POSIX(getPOSIXTime)
 
@@ -54,17 +55,18 @@ compilerFunction v o fs maxt t e i = do
   if not $ any (\(ProgLine l _ _) -> l == "CYCLIC_start") irProgram' then
     return ()
   else
-    let (irProgram, unknownmap) = addUnknownAndMakeMap irProgram' in do
+    let (irProgram'', unknownmap') = addUnknownAndMakeMap irProgram' in do
       when (v>2) $ liftIO $ putStrLn "**** PRINTING IR PROGRAM ****"
-      when (v>2) $ liftIO $ printProgram irProgram
-      when i $ liftIO $ writeFile (o ++ ".ir") $ showProgram irProgram
+      when (v>2) $ liftIO $ printProgram irProgram''
+      when i $ liftIO $ writeFile (o ++ ".ir") $ showProgram irProgram''
       when (v>=1) $ liftIO $ putStrLn $ "\n**** Unknown Functions : " ++ o ++ " ****"
-      maybemap <- liftIO $ getUnknownFunctionsTable "unknownfunctions.txt"
-      when (v>=1) $ liftIO $ putStr . unlines $ map (\(inst, name) -> show inst ++ " : " ++ name ++ getUknownTiming maybemap name) $ M.toList unknownmap
-      liftIO $ writeFile (o ++ (if e then ".tapn" else ".xml")) $ makePetriNet e o maxt irProgram unknownmap maybemap
-      endtime <- liftIO $ getPOSIXTime
-      when t $ liftIO $ putStrLn $ o ++ " : " ++ show (endtime - starttime)
-      return ()
+      maybemap' <- liftIO $ getUnknownFunctionsTable "unknownfunctions.txt"
+      when (v>=1) $ liftIO $ putStr . unlines $ map (\(inst, name) -> show inst ++ " : " ++ name ++ getUknownTiming maybemap' name) $ M.toList unknownmap'
+      let (irProgram, unknownmap, maybemap) = performReduction irProgram'' unknownmap' maybemap' in do
+        liftIO $ writeFile (o ++ (if e then ".tapn" else ".xml")) $ makePetriNet e o maxt irProgram unknownmap maybemap
+        endtime <- liftIO $ getPOSIXTime
+        when t $ liftIO $ putStrLn $ o ++ " : " ++ show (endtime - starttime)
+        return ()
 
 getUknownTiming :: Maybe KnownMap -> String -> String
 getUknownTiming Nothing _ = ""
