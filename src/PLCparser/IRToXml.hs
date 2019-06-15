@@ -1,4 +1,4 @@
-{- 
+{-
 	This file is part of stverif.
 
     stverif is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
   -}
 {-# LANGUAGE RankNTypes #-}
 
-module PLCparser.IRToXml(makePetriNet, getUnknownTiming) where
+module PLCparser.IRToXml(makePetriNet, getUnknownTiming, memoryaccesstime) where
 
 import PLCparser.IntermediateRepresentation
 import PLCparser.UnknownFunctions
@@ -30,6 +30,10 @@ type ArcWeight = Integer
 data Arc = ArcToT String String ArcWeight TInterval
          | ArcToP String String ArcWeight
 data Transition = Trans String | Urgent String
+
+
+memoryaccesstime = Ti 15 -- 3 * 5cycles
+
 
 -- ****************************  show functions ****************************  --
 class TapaalShow a where
@@ -92,8 +96,8 @@ findAllPlaces ((ProgLine l ins gl):xs) m k = findPlacesInstruction l ins m k ++
                                            findAllPlaces xs m k
   where
     findPlacesInstruction :: Label -> Instruction -> UnknownMap -> Maybe KnownMap -> [Place]
-    findPlacesInstruction l ins@(Eval _ _ _)      _ _ = [(Place l 0 $ addTI (Ti 3) $ invariant ins)]
-    findPlacesInstruction l ins@(Compare _ _ _ _) _ _ = [(Place l 0 $ addTI (Ti 3) $ invariant ins)]
+    findPlacesInstruction l ins@(Eval _ _ _)      _ _ = [(Place l 0 $ addTI memoryaccesstime $ invariant ins)]
+    findPlacesInstruction l ins@(Compare _ _ _ _) _ _ = [(Place l 0 $ addTI memoryaccesstime $ invariant ins)]
     findPlacesInstruction l ins@(If _ il)         _ _ = [(Place l 0 $ invariant ins)]
     findPlacesInstruction l ins@(Case _ _)        _ _ = [(Place l 0 $ invariant ins)]
     findPlacesInstruction l ins@(Loop n _ ll le)  _ _ = [(Place l 0 $ invariant ins)
@@ -145,9 +149,9 @@ findAllArcs [] _ _ = []
 findAllArcs (x:xs) m k = (findArcs x m k) ++ findAllArcs xs m k
   where
     findArcs :: ProgLine -> UnknownMap -> Maybe KnownMap -> [Arc]
-    findArcs (ProgLine l ins@(Eval _ op _) gl)     _ _= [(ArcToT l        l        1 $ addTI (Ti 3) $ time $ O op)
+    findArcs (ProgLine l ins@(Eval _ op _) gl)     _ _= [(ArcToT l        l        1 $ addTI memoryaccesstime $ time $ O op)
                                                         ,(ArcToP l        (removeColon gl)       1)]
-    findArcs (ProgLine l ins@(Compare _ _ c _) gl) _ _= [(ArcToT l        l        1 $ addTI (Ti 3) $ time $ C c)
+    findArcs (ProgLine l ins@(Compare _ _ c _) gl) _ _= [(ArcToT l        l        1 $ addTI memoryaccesstime $ time $ C c)
                                                         ,(ArcToP l        (removeColon gl)       1)]
     findArcs (ProgLine l ins@(If _ ly) gl)         _ _= [(ArcToT l        (l++"T") 1 $ time Jump)
                                                         ,(ArcToT l        (l++"F") 1 $ time Jump)
@@ -159,22 +163,22 @@ findAllArcs (x:xs) m k = (findArcs x m k) ++ findAllArcs xs m k
                                                         ,(ArcToP l        (l++"p")   1)
                                                         ,(ArcToP l        ls         1)
                                                         ,(ArcToP (l++ removeColon le)  (removeColon gl)         1)]
-    findArcs (ProgLine l ins@(Loop n ls le ll) gl) _ _= [(ArcToT l          l          1 $ time Jump) 
-                                                        ,(ArcToP l          le         1)             
-                                                        ,(ArcToT le         (l++"L")   1 (TI 0 0))    
+    findArcs (ProgLine l ins@(Loop n ls le ll) gl) _ _= [(ArcToT l          l          1 $ time Jump)
+                                                        ,(ArcToP l          le         1)
+                                                        ,(ArcToT le         (l++"L")   1 (TI 0 0))
                                                         ,(ArcToP (l++"L")   (l++"ppp") 1)
                                                         ,(ArcToT (l++"ppp") (l++"P")   1 $ time Jump)
-                                                        ,(ArcToP (l++"P")   ls         1)             
-                                                        ,(ArcToT le         (l++"E")   1 (TI 0 0))  
-                                                        ,(ArcToP (l++"E")   ll         1)             
-                                                        ,(ArcToP (l++"L")   (l++"pp")  1)             
-                                                        ,(ArcToT ll         (l++"C")   1 (TI 0 0))    
-                                                        ,(ArcToT (l++"pp")  (l++"C")   1 (Tinf 0))    
-                                                        ,(ArcToP (l++"C")   ll         1)             
-                                                        ,(ArcToP (l++"C")   (l++"p")   1)             
-                                                        ,(ArcToT (l++"p")   (l++"L")   1 (Tinf 0))    
-                                                        ,(ArcToT (l++"p")   (l++"D")   n (Tinf 0))    
-                                                        ,(ArcToT ll         (l++"D")   1 (TI 0 0))    
+                                                        ,(ArcToP (l++"P")   ls         1)
+                                                        ,(ArcToT le         (l++"E")   1 (TI 0 0))
+                                                        ,(ArcToP (l++"E")   ll         1)
+                                                        ,(ArcToP (l++"L")   (l++"pp")  1)
+                                                        ,(ArcToT ll         (l++"C")   1 (TI 0 0))
+                                                        ,(ArcToT (l++"pp")  (l++"C")   1 (Tinf 0))
+                                                        ,(ArcToP (l++"C")   ll         1)
+                                                        ,(ArcToP (l++"C")   (l++"p")   1)
+                                                        ,(ArcToT (l++"p")   (l++"L")   1 (Tinf 0))
+                                                        ,(ArcToT (l++"p")   (l++"D")   n (Tinf 0))
+                                                        ,(ArcToT ll         (l++"D")   1 (TI 0 0))
                                                         ,(ArcToP (l++"D")   (l++"pppp") 1)
                                                         ,(ArcToP (l++"D")   (l++"p")   n)
                                                         -- Optimization
@@ -200,7 +204,7 @@ knowntointerval (a,b) = (TI a b)
 -- ****************************  Utility things ****************************  --
 getUnknownTiming :: UnknownMap -> Maybe KnownMap -> Instruction -> TInterval
 getUnknownTiming _ Nothing _ = (TI 0 0)
-getUnknownTiming m (Just map) i = let e = M.lookup i m in 
+getUnknownTiming m (Just map) i = let e = M.lookup i m in
                                     case e of
                                       Just l -> let elem = M.lookup l map in
                                         case elem of

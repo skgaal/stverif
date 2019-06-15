@@ -22,7 +22,7 @@ import qualified Data.Map as M
 import PLCparser.IntermediateRepresentation(Program, ProgLine(..), Instruction(..), Label)
 import PLCparser.UnknownFunctions(UnknownMap, KnownMap)
 import PLCparser.TimeTable
-import PLCparser.IRToXml(getUnknownTiming)
+import PLCparser.IRToXml(getUnknownTiming, memoryaccesstime)
 
 performReduction :: Program -> UnknownMap -> Maybe KnownMap -> (Program, UnknownMap, Maybe KnownMap)
 performReduction program unknownmap knownmap = let
@@ -77,8 +77,8 @@ isEvalCompareUnknown (Unknown _)       = True
 isEvalCompareUnknown _                 = False
 
 timeOf :: UnknownMap -> Maybe KnownMap -> Instruction -> TInterval
-timeOf _ _ (Eval _ op _)       = addTI (Ti 3) $ time $ O op
-timeOf _ _ (Compare _ _ cmp _) = addTI (Ti 3) $ time $ C cmp
+timeOf _ _ (Eval _ op _)       = addTI memoryaccesstime $ time $ O op
+timeOf _ _ (Compare _ _ cmp _) = addTI memoryaccesstime $ time $ C cmp
 timeOf um km i@(Unknown _)     = getUnknownTiming um km i
 
 intervalToPair :: TInterval -> (Integer, Integer)
