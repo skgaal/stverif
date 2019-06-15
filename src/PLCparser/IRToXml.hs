@@ -108,7 +108,7 @@ findAllPlaces ((ProgLine l ins gl):xs) m k = findPlacesInstruction l ins m k ++
                                                         ,(Place ll         0 (TI 0 0))
                                                         ,(Place le         0 (TI 0 0))]
     findPlacesInstruction l ins@(Call _ le)       _ _ = [(Place l          0 $ invariant ins)
-                                                      ,(Place (l++"p")   0 (Tinf 0))]
+                                                        ,(Place (l++"p")   0 (Tinf 0))]
     findPlacesInstruction l ins@(Unknown _)       m k = [(Place l          0 $ getUnknownTiming m k ins)] -- TODO: Lookup the unknown in the map!
     findPlacesGotoLabel :: Label -> [Place]
     findPlacesGotoLabel (':':gl) = [(Place gl 0 $ time Return)]
@@ -190,11 +190,11 @@ findAllArcs (x:xs) m k = (findArcs x m k) ++ findAllArcs xs m k
     findArcs (ProgLine l ins@(Case _ cs) gl)       _ _= findCaseArcs l (nub . snd $ unzip cs) (removeColon gl)
       where
         findCaseArcs :: Label -> [Label] -> Label -> [Arc]
-        findCaseArcs l [] gl          = [(ArcToT l           (l++"Else") 1   $ time Jump)
-                                        ,(ArcToP (l++"Else") gl          1)]
-        findCaseArcs l (cl:xs) gl = [(ArcToT l            (l++"_"++cl) 1 $ time Jump)
-                                        ,(ArcToP (l++"_"++cl) cl           1)] ++
-                                        findCaseArcs l xs gl
+        findCaseArcs l [] gl      = [(ArcToT l           (l++"Else")  1   $ time Jump)
+                                    ,(ArcToP (l++"Else") gl           1)]
+        findCaseArcs l (cl:xs) gl = [(ArcToT l           (l++"_"++cl) 1 $ time Jump)
+                                    ,(ArcToP (l++"_"++cl) cl          1)] ++
+                                    findCaseArcs l xs gl
     findArcs (ProgLine l ins@(Unknown _) gl)       u k  = [(ArcToT l l  1 $ getUnknownTiming m k ins )
                                                           ,(ArcToP l (removeColon gl) 1)]
 
