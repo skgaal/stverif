@@ -89,7 +89,7 @@ compileStmt (Action_Call (Identifier s)) = do
 compileStmt (If_Stmt c stms elsifs elseopt) = do
   v <- compileExpNoMut c
   k_if <- peekLabel >>= deferGoto . IR.If v
-  k_end  <- sequentially compileStmt stms
+  k_end <- sequentially compileStmt stms
   case (elsifs, elseopt) of
     ([],Else_None) -> return $ joinEnds [k_if, k_end]
     _ -> do
@@ -309,7 +309,6 @@ visitExp' _ (Enot      e1) = do
 visitExp' False (Econst c) = do
   n <- parseConstant c
   v1 <- nextVar n
-  n <- parseConstant c
   t_op <- IR.typeOperator IR.Assign n
   tell [IR.Eval v1 t_op n]
   return $ IR.Var v1
