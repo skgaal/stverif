@@ -58,7 +58,7 @@ instance Show TInterval where
   show (Tmaxtinf) = "&lt; inf"
 
 showarci :: TInterval -> String
-showarci (TI a b) = "["++show b++","++show b++"]"
+showarci (TI a b) = "["++show a++","++show b++"]"
 showarci (Ti a)   = "["++show a++","++show a++"]"
 showarci (Tinf a) = "["++show a++",inf)"
 showarci (Tmaxt a)= "["++show a++",**PLACEHOLDER**]"
