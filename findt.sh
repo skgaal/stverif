@@ -1,8 +1,9 @@
 #!/bin/bash
 tapn=verifydtapn64
+f=$2
 
-for f in *.xml
-do
+#for f in *.xml
+#do
 	if [[ $f == cur_net.xml ]]; then
 		continue
 	fi
@@ -16,7 +17,7 @@ do
 	rm cur_net.xml
 	sed 's/\*\*PLACEHOLDER\*\*/'$t'/g' $f > cur_net.xml
 	rm query.q
-	echo 'EF '$f'_watchdog_not_ok__ = 1' | sed 's/.xml//' > query.q
+	echo 'AF watchdog_ok__ = 1' | sed 's/.xml//' > query.q
 
 	result=$(./$tapn -k $k cur_net.xml $q)
 	while [[ $result == *"Max number of tokens found in any reachable marking: >"* ]] || [[ $result == *"The specified k-bound is less than the number of tokens in the initial markings."* ]]; do
@@ -26,7 +27,7 @@ do
 	echo $k
 	
 	result=$(./$tapn -k $k cur_net.xml $q)
-	while [[ $result == *"Query is satisfied"* ]]; do
+	while [[ $result == *"Query is NOT satisfied"* ]]; do
 		thigh=$(expr $thigh + $thigh)
 		tlow=$t
 		t=$thigh
@@ -35,6 +36,7 @@ do
 		result=$(./$tapn -k $k cur_net.xml $q)
 		echo "$tlow - $thigh"
 	done
+	
 	time=-1
 	while [[ $diff -gt 0 ]]; do
 		t=$(expr \( $thigh + $tlow \) / 2)
@@ -43,7 +45,7 @@ do
 		timestart=`date +%s`
 		result=$(./$tapn -k $k cur_net.xml $q)
 		time=$((`date +%s`-timestart))
-		if [[ $result == *"Query is NOT"* ]]; then
+		if [[ $result == *"Query is satisfied"* ]]; then
 			thigh=$t
 		else
 			tlow=$(expr $t + 1)
@@ -52,4 +54,6 @@ do
 		diff=$(expr $thigh - $tlow)
 	done
 	echo "File $f Query $q Maxt $thigh Time $time"
-done
+
+
+#done
